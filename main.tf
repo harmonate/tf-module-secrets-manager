@@ -158,7 +158,7 @@ resource "aws_lambda_permission" "allow_secretsmanager" {
   action        = "lambda:InvokeFunction"
   function_name = aws_lambda_function.secrets_rotation_function[count.index].function_name
   principal     = "secretsmanager.amazonaws.com"
-  source_arn    = aws_secretsmanager_secret.credentials[count.index].arn
+  source_arn    = aws_secretsmanager_secret.credentials.arn
 }
 
 
