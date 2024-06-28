@@ -15,7 +15,3 @@ terraform {
     }
   }
 }
-
-provider "aws" {
-  alias = "default"
-}
