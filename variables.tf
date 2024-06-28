@@ -18,11 +18,6 @@ variable "username" {
   type        = string
 }
 
-variable "ignore_changes_on_destroy" {
-  description = "The account to deploy the resources into"
-  type        = string
-}
-
 variable "rotation_days" {
   description = "Whether to enable rotation of the secret"
   type        = number
