@@ -116,7 +116,7 @@ resource "aws_secretsmanager_secret_rotation" "rotation" {
 }
 
 locals {
-  lambda_secrets_package_path = "${path.module}/lambda-secrets.zip"
+  lambda_secrets_package_path = "${path.module}/lambda_function.zip"
   fileexists_secrets          = fileexists(local.lambda_secrets_package_path)
   secrets_source_code_hash    = local.fileexists_secrets ? filebase64sha256(local.lambda_secrets_package_path) : null
 }
