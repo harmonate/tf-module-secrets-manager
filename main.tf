@@ -6,32 +6,74 @@ resource "random_string" "suffix" {
   lower   = true
 }
 
+locals {
+  password_type = coalesce(
+    var.cognito_user_pool_arn != null ? "cognito" : null,
+    var.rds_db_instance_arn != null ? "rds" : null,
+    "none"
+  )
+
+  password_requirements = {
+    rds = {
+      min_length       = 16
+      max_length       = 41
+      special          = true
+      override_special = "!#$%&*()-_=+[]{}<>:?"
+      min_lower        = 1
+      min_upper        = 1
+      min_numeric      = 1
+      min_special      = 1
+    }
+    cognito = {
+      min_length       = 8
+      max_length       = 256
+      special          = true
+      override_special = "^$*.[]{}()?-\"!@#%&/\\,><':;|_~`"
+      min_lower        = 1
+      min_upper        = 1
+      min_numeric      = 1
+      min_special      = 1
+    }
+    none = {
+      min_length       = 8
+      max_length       = 32
+      special          = false
+      min_lower        = 1
+      min_upper        = 1
+      min_numeric      = 1
+      min_special      = 0
+    }
+  }
+
+  selected_requirements = local.password_requirements[local.password_type]
+}
+
+resource "random_password" "password" {
+  count            = var.only_rotate_secret ? 0 : 1
+  length           = local.selected_requirements.max_length
+  special          = local.selected_requirements.special
+  override_special = lookup(local.selected_requirements, "override_special", null)
+  min_lower        = local.selected_requirements.min_lower
+  min_upper        = local.selected_requirements.min_upper
+  min_numeric      = local.selected_requirements.min_numeric
+  min_special      = local.selected_requirements.min_special
+}
+
+
+
 resource "aws_secretsmanager_secret" "credentials" {
   provider = aws.default
   name     = "${var.secret_name}-${random_string.suffix.result}"
 }
 
-resource "random_integer" "password_length" {
-  min = var.min_length
-  max = var.max_length
-}
 
-resource "random_password" "password" {
-  length           = random_integer.password_length.result
-  special          = true
-  min_special      = 1
-  min_numeric      = 1
-  min_upper        = 1
-  min_lower        = 1
-  override_special = "!#$%&()*+,-.:;<=>?[]^_{|}~"  #the set of allowable characters for RDS passwords
-}
 
 resource "aws_secretsmanager_secret_version" "secret_version" {
   provider  = aws.default
   secret_id = aws_secretsmanager_secret.credentials.id
   secret_string = jsonencode({
     username = var.username
-    password = random_password.password.result
+    password = random_password.password[0].result
   })
 }
 

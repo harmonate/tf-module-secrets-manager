@@ -4,8 +4,6 @@
 module "secrets-manager" {
   source                = "git::https://github.com/harmonate/tf-module-secrets-manager.git?ref=main"
   secret_name           = "my-secret"
-  min_length            = 12
-  max_length            = 20
   username              = "admin"
   rotation_days         = 30  #set to 0 to disable rotation
   cognito_user_pool_arn = "my-user-pool"  #optional for rotation a cognito user
