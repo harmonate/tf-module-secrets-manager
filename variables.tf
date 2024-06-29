@@ -3,16 +3,6 @@ variable "secret_name" {
   type        = string
 }
 
-variable "min_length" {
-  description = "The minimum length of the password"
-  type        = number
-}
-
-variable "max_length" {
-  description = "The maximum length of the password"
-  type        = number
-}
-
 variable "username" {
   description = "The username to store in the secret"
   type        = string
