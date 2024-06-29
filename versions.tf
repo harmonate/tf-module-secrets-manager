@@ -16,6 +16,6 @@ terraform {
   }
 }
 
-provider "aws" {
-  alias = "default"
-}
+# provider "aws" {
+#   alias = "default"
+# }
