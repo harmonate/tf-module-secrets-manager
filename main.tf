@@ -1,17 +1,4 @@
-resource "random_string" "suffix" {
-  length  = 5
-  special = false
-  upper   = false
-  numeric = true
-  lower   = true
-}
-
 locals {
-  is_cognito = var.cognito_user_pool_arn != null
-  is_rds     = var.rds_db_instance_arn != null
-
-  password_type = local.is_cognito ? "cognito" : (local.is_rds ? "rds" : "none")
-
   password_requirements = {
     rds = {
       length           = 41
@@ -29,7 +16,7 @@ locals {
     }
   }
 
-  selected_requirements = local.password_requirements[local.password_type]
+  selected_requirements = local.password_requirements[var.secret_type]
 }
 
 resource "random_password" "password" {
@@ -41,6 +28,14 @@ resource "random_password" "password" {
   min_upper        = 1
   min_numeric      = 1
   min_special      = local.selected_requirements.special ? 1 : 0
+}
+
+resource "random_string" "suffix" {
+  length  = 5
+  special = false
+  upper   = false
+  numeric = true
+  lower   = true
 }
 
 resource "aws_secretsmanager_secret" "credentials" {

@@ -3,6 +3,15 @@ variable "secret_name" {
   type        = string
 }
 
+variable "secret_type" {
+  description = "Type of secret (cognito, rds, or none)"
+  type        = string
+  validation {
+    condition     = contains(["cognito", "rds", "none"], var.secret_type)
+    error_message = "Secret type must be 'cognito', 'rds', or 'none'."
+  }
+}
+
 variable "username" {
   description = "The username to store in the secret"
   type        = string
