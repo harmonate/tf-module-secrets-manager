@@ -7,41 +7,25 @@ resource "random_string" "suffix" {
 }
 
 locals {
-  password_type = coalesce(
-    var.cognito_user_pool_arn != null ? "cognito" : null,
-    var.rds_db_instance_arn != null ? "rds" : null,
-    "none"
-  )
+  is_cognito = var.cognito_user_pool_arn != null
+  is_rds     = var.rds_db_instance_arn != null
+
+  password_type = local.is_cognito ? "cognito" : (local.is_rds ? "rds" : "none")
 
   password_requirements = {
     rds = {
-      min_length       = 16
-      max_length       = 41
+      length           = 41
       special          = true
       override_special = "!#$%&*()-_=+[]{}<>:?"
-      min_lower        = 1
-      min_upper        = 1
-      min_numeric      = 1
-      min_special      = 1
     }
     cognito = {
-      min_length       = 8
-      max_length       = 256
+      length           = 256
       special          = true
       override_special = "^$*.[]{}()?-\"!@#%&/\\,><':;|_~`"
-      min_lower        = 1
-      min_upper        = 1
-      min_numeric      = 1
-      min_special      = 1
     }
     none = {
-      min_length       = 8
-      max_length       = 32
+      length           = 32
       special          = false
-      min_lower        = 1
-      min_upper        = 1
-      min_numeric      = 1
-      min_special      = 0
     }
   }
 
@@ -50,23 +34,19 @@ locals {
 
 resource "random_password" "password" {
   count            = var.only_rotate_secret ? 0 : 1
-  length           = local.selected_requirements.max_length
+  length           = local.selected_requirements.length
   special          = local.selected_requirements.special
   override_special = lookup(local.selected_requirements, "override_special", null)
-  min_lower        = local.selected_requirements.min_lower
-  min_upper        = local.selected_requirements.min_upper
-  min_numeric      = local.selected_requirements.min_numeric
-  min_special      = local.selected_requirements.min_special
+  min_lower        = 1
+  min_upper        = 1
+  min_numeric      = 1
+  min_special      = local.selected_requirements.special ? 1 : 0
 }
-
-
 
 resource "aws_secretsmanager_secret" "credentials" {
   provider = aws.default
   name     = "${var.secret_name}-${random_string.suffix.result}"
 }
-
-
 
 resource "aws_secretsmanager_secret_version" "secret_version" {
   provider  = aws.default
