@@ -23,7 +23,7 @@ resource "random_password" "password" {
   min_numeric      = 1
   min_upper        = 1
   min_lower        = 1
-  override_special = "_%@#"
+  override_special = "!#$%&()*+,-.:;<=>?[]^_{|}~"  #the set of allowable characters for RDS passwords
 }
 
 resource "aws_secretsmanager_secret_version" "secret_version" {
