@@ -11,8 +11,8 @@ locals {
       override_special = "^$*.[]{}()?-\"!@#%&/\\,><':;|_~`"
     }
     none = {
-      length           = 32
-      special          = false
+      length  = 32
+      special = false
     }
   }
 
@@ -50,6 +50,10 @@ resource "aws_secretsmanager_secret_version" "secret_version" {
     username = var.username
     password = random_password.password[0].result
   })
+
+  lifecycle {
+    ignore_changes = [secret_string]
+  }
 }
 
 resource "aws_iam_role" "lambda_rotation" {
